@@ -1,0 +1,90 @@
+Esercizio Pipe + DTO NestJS
+
+Realizzare una risorsa posts che permetta la creazione di un post tramite una request POST.
+
+Obiettivo
+
+Usare un DTO e il ValidationPipe di NestJS per validare i dati ricevuti nel body della request.
+
+Requisiti
+1. Creazione risorsa posts
+
+Creare:
+
+PostsModule
+PostsController
+CreatePostDto
+2. Rotta da implementare
+
+La rotta deve essere:
+
+POST /posts
+3. Body della request
+
+La request deve ricevere un JSON con questi campi:
+
+{
+  "title": "Titolo del post",
+  "description": "Descrizione del post",
+  "author": "Mario Rossi"
+}
+4. Regole di validazione
+
+Nel DTO applicare queste regole:
+
+title:
+- obbligatorio
+- deve essere una stringa
+- lunghezza minima 10 caratteri
+
+description:
+- obbligatorio
+- deve essere una stringa
+- non deve essere vuota
+
+author:
+- opzionale / nullable
+- se presente, deve essere una stringa
+5. Comportamento atteso
+
+Se i dati sono validi, il controller deve restituire:
+
+{
+  "message": "Post creato correttamente",
+  "data": {
+    "title": "...",
+    "description": "...",
+    "author": "..."
+  }
+}
+
+Se i dati non sono validi, NestJS deve restituire errore 400 Bad Request.
+
+6. Abilitare il ValidationPipe
+
+Nel file main.ts abilitare il pipe globale:
+
+app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+);
+Test con PowerShell
+Request valida
+curl.exe -X POST "http://localhost:3000/posts" `
+-H "Content-Type: application/json" `
+-d '{ "title": "Titolo valido", "description": "Descrizione del post", "author": "Mario Rossi" }'
+Request valida senza author
+curl.exe -X POST "http://localhost:3000/posts" `
+-H "Content-Type: application/json" `
+-d '{ "title": "Titolo valido", "description": "Descrizione del post" }'
+Request non valida: title troppo corto
+curl.exe -X POST "http://localhost:3000/posts" `
+-H "Content-Type: application/json" `
+-d '{ "title": "Corto", "description": "Descrizione del post" }'
+Request non valida: description mancante
+curl.exe -X POST "http://localhost:3000/posts" `
+-H "Content-Type: application/json" `
+-d '{ "title": "Titolo valido" }'
