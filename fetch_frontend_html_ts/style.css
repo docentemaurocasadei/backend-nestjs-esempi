@@ -1,0 +1,28 @@
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.product-name {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.product-description {
+  color: #555;
+}
+
+.product-price {
+  font-weight: bold;
+  color: #0a7;
+}
