@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(Start-Process -NoNewWindow npm -ArgumentList \"run\",\"start:dev\" -RedirectStandardOutput \"server.log\" -RedirectStandardError \"server.err\")"
     ]
   }
 }
