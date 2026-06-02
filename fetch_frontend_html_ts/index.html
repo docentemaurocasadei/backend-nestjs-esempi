@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <button id="loadBtnFetch">Carica prodotti fetch</button>
+<button id="loadBtnAsyncAwait">Carica prodotti async-await</button>
+
+<div id="productsList" class="products-grid"></div>
+
+<p id="message"></p>
+
+<template id="productCardTemplate">
+  <div class="product-card">
+    <h3 class="product-name"></h3>
+    <p class="product-description"></p>
+    <p class="product-price"></p>
+  </div>
+</template>
+
+<script src="./dist/products.js"></script>
+</body>
+</html>

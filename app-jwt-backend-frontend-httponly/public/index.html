@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JWT HttpOnly Products CRUD</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="toolbar">
+        <div>
+          <h1>Products CRUD</h1>
+          <p>JWT in cookie HttpOnly con Express, TypeORM e MySQL</p>
+        </div>
+        <button id="logoutButton" class="secondary hidden" type="button">Logout</button>
+      </section>
+
+      <section id="message" class="message hidden"></section>
+
+      <section id="loginPanel" class="panel">
+        <h2>Login</h2>
+        <form id="loginForm" class="form">
+          <label>
+            Username
+            <input id="username" name="username" type="text" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Accedi</button>
+        </form>
+      </section>
+
+      <section id="productsPanel" class="panel hidden">
+        <div class="panel-header">
+          <h2>Prodotti</h2>
+          <button id="newProductButton" type="button">Nuovo prodotto</button>
+        </div>
+
+        <form id="productForm" class="form grid-form hidden">
+          <input id="productId" type="hidden" />
+          <label>
+            Nome
+            <input id="name" name="name" type="text" required />
+          </label>
+          <label>
+            Prezzo
+            <input id="price" name="price" type="number" min="0" step="0.01" required />
+          </label>
+          <label class="full">
+            Descrizione
+            <textarea id="description" name="description" rows="3"></textarea>
+          </label>
+          <div class="form-actions full">
+            <button type="submit">Salva</button>
+            <button id="cancelEditButton" class="secondary" type="button">Annulla</button>
+          </div>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Descrizione</th>
+                <th>Prezzo</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
