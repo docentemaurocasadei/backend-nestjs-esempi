@@ -1,0 +1,129 @@
+<!-- npx serve -l 5500 -->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo JWT HttpOnly</title>
+</head>
+<body>
+  <h1>Demo JWT + HttpOnly Cookie</h1>
+
+  <h2>Login</h2>
+  <input id="username" value="admin" placeholder="username" />
+  <input id="password" value="123456" placeholder="password" type="password" />
+  <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
+
+  <h2>Posts</h2>
+  <button onclick="getPosts()">Carica tutti i post</button>
+  <button onclick="insertPost()">Inserisci post</button>
+
+  <h2>Log</h2>
+  <pre id="log"></pre>
+
+  <script>
+    const API = 'http://localhost:3000';
+
+    // Niente localStorage, niente variabili per i token.
+    // I cookie vengono gestiti dal browser in automatico.
+
+    function log(msg) {
+      document.getElementById('log').textContent += msg + '\n';
+    }
+
+    async function login() {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        credentials: 'include',           // invia e riceve cookie
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        log('Login fallito: ' + (data.message ?? res.status));
+        return;
+      }
+
+      // Il backend ha settato access_token e refresh_token come cookie HttpOnly.
+      // Qui non c'è niente da leggere o salvare.
+      log('Login effettuato. Cookie settati dal backend.');
+    }
+
+    async function logout() {
+      await fetch(`${API}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      log('Logout effettuato. Cookie rimossi dal backend.');
+    }
+
+    async function getPosts() {
+      // GET pubblica, nessun cookie di auth richiesto
+      const res = await fetch(`${API}/posts`);
+      const data = await res.json();
+      log('Post:\n' + JSON.stringify(data, null, 2));
+    }
+
+    // Wrapper per chiamate autenticate con refresh automatico
+    async function apiFetch(url, options = {}) {
+      let res = await fetch(url, {
+        ...options,
+        credentials: 'include',           // il browser allega access_token cookie
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers ?? {}),
+          // Niente Authorization header — il token viaggia nel cookie
+        },
+      });
+
+      if (res.status === 401) {
+        // Access token scaduto: prova il refresh
+        const refreshRes = await fetch(`${API}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',         // il browser allega refresh_token cookie
+        });
+
+        if (!refreshRes.ok) {
+          log('Sessione scaduta. Fai login.');
+          throw new Error('Sessione scaduta');
+        }
+
+        log('Access token rinnovato automaticamente.');
+
+        // Riprova la chiamata originale
+        res = await fetch(url, {
+          ...options,
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers ?? {}),
+          },
+        });
+      }
+
+      return res;
+    }
+
+    async function insertPost() {
+      const res = await apiFetch(`${API}/posts`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'Post di test',
+          content: 'Inserito con cookie HttpOnly, zero localStorage',
+        }),
+      });
+
+      if (res.ok) {
+        log('Post inserito con successo.');
+      } else {
+        log('Errore inserimento post: ' + res.status);
+      }
+    }
+  </script>
+</body>
+</html>
