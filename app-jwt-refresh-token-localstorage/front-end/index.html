@@ -17,6 +17,7 @@
   <input id="password" value="123456" placeholder="password" type="password" />
 
   <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
 
   <h2>Post</h2>
 
@@ -29,15 +30,19 @@
   <script>
     const API_URL = 'http://localhost:3000';
 
-    let accessToken = null;
-    let refreshToken = null;
+    let accessToken = localStorage.getItem('accessToken');
+    let refreshToken = localStorage.getItem('refreshToken');
 
     function writeLog(message) {
-        document.getElementById('log').textContent += message + '\n';
-        setTimeout(() => {
-          const logElement = document.getElementById('log');
-          logElement.textContent = '';
-        }, 10000);
+      document.getElementById('log').textContent += message + '\n';
+
+      setTimeout(() => {
+        document.getElementById('log').textContent = '';
+      }, 10000);
+    }
+
+    if (accessToken) {
+      writeLog('Access token recuperato dal Local Storage');
     }
 
     async function login() {
@@ -65,7 +70,11 @@
       accessToken = data.access_token;
       refreshToken = data.refresh_token;
 
-      writeLog('Token ottenuto. Scadenza access token: 1 minuto');
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      writeLog('Token ottenuto e salvato nel Local Storage');
+      writeLog('Scadenza access token: 1 minuto');
     }
 
     async function getPosts() {
@@ -94,6 +103,12 @@
       });
 
       if (!response.ok) {
+        accessToken = null;
+        refreshToken = null;
+
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
         writeLog('Refresh token scaduto. Devi rifare login.');
         throw new Error('Refresh token non valido');
       }
@@ -103,7 +118,10 @@
       accessToken = data.access_token;
       refreshToken = data.refresh_token;
 
-      writeLog('Token scaduto, token rigenerato');
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      writeLog('Token scaduto, token rigenerato e salvato nel Local Storage');
     }
 
     async function apiFetch(url, options = {}) {
@@ -151,6 +169,16 @@
       } else {
         writeLog('Errore inserimento post');
       }
+    }
+
+    function logout() {
+      accessToken = null;
+      refreshToken = null;
+
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
+      writeLog('Logout effettuato. Token rimossi dal Local Storage');
     }
   </script>
 </body>
