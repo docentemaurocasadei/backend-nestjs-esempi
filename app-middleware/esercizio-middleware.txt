@@ -1,0 +1,88 @@
+Obiettivo
+
+Creare un middleware che controlli la presenza di specifici headers HTTP prima di permettere l’accesso al controller.
+
+Requisiti
+1. Creazione progetto
+
+Creare una nuova applicazione NestJS.
+
+2. Creazione risorsa users
+
+Creare:
+
+UsersModule
+UsersController
+
+La route:
+
+GET /users
+
+deve restituire:
+
+{
+  "message": "Arrivato al controller"
+}
+3. Creazione middleware
+
+Creare un middleware AuthMiddleware.
+
+Il middleware deve:
+
+leggere gli headers:
+email
+password
+verificare i valori:
+email = admin@email.it
+password = admin
+4. Gestione autorizzazione
+
+Se i dati NON sono corretti:
+
+stampare nel log:
+Unauthorized access attempt
+restituire:
+{
+  "message": "Unauthorized"
+}
+
+con status HTTP:
+
+401 Unauthorized
+5. Flusso corretto
+
+Se le credenziali sono corrette:
+
+eseguire next()
+permettere l’accesso al controller
+6. Registrazione middleware
+
+Registrare il middleware nel UsersModule tramite:
+
+consumer
+  .apply(AuthMiddleware)
+  .forRoutes(UsersController);
+Test richiesti
+
+Verificare il funzionamento tramite PowerShell usando curl.exe.
+
+Test corretto
+curl.exe -X GET "http://localhost:3000/users" `
+-H "email: admin@email.it" `
+-H "password: admin"
+
+Risultato atteso:
+
+{
+  "message": "Arrivato al controller"
+}
+Test errato
+curl.exe -X GET "http://localhost:3000/users" `
+-H "email: admin@email.it" `
+-H "password: test"
+
+Risultato atteso:
+
+{
+  "message": "Unauthorized"
+}
