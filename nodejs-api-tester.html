@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Node.js API Tester</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b26;
+    --bg3: #1c2333;
+    --bg4: #242d42;
+    --border: #2a3550;
+    --border2: #334066;
+    --text: #e2e8f0;
+    --text2: #8892a4;
+    --text3: #4a5568;
+    --green: #1D9E75;
+    --green-light: #68d391;
+    --green-bg: #0d2b20;
+    --blue: #378ADD;
+    --blue-light: #63b3ed;
+    --blue-bg: #0d1f35;
+    --amber: #FAC775;
+    --amber-bg: #2d1f06;
+    --red: #E24B4A;
+    --red-light: #fc8181;
+    --red-bg: #2d0d0d;
+    --purple: #b794f4;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .wl { display: flex; gap: 6px; align-items: center; }
+  .wl span { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .w1 { background: var(--red); }
+  .w2 { background: var(--amber); }
+  .w3 { background: var(--green); }
+  .header h1 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -.02em; }
+  .header h1 span { color: var(--green); }
+  .version { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text3);
+    background: var(--bg3); padding: 3px 10px; border-radius: 4px; border: 0.5px solid var(--border); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: .7rem 1.1rem;
+    background: var(--bg3);
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-header:hover { background: var(--bg4); }
+  .card-body { padding: 1.1rem; }
+
+  /* ── Section label ── */
+  .slabel {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  /* ── Method badge ── */
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 4px;
+    letter-spacing: .04em;
+  }
+  .badge-get  { background: var(--green-bg); color: var(--green-light); border: 0.5px solid var(--green); }
+  .badge-post { background: var(--blue-bg);  color: var(--blue-light);  border: 0.5px solid var(--blue); }
+  .badge-cfg  { background: var(--bg4);      color: var(--text2);       border: 0.5px solid var(--border2); }
+
+  .card-header-title { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .chevron { margin-left: auto; color: var(--text3); font-size: 16px; transition: transform .2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 8px 11px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(55,138,221,.18);
+    background: var(--bg4);
+  }
+  textarea { resize: vertical; min-height: 82px; line-height: 1.5; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── Toggle ── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .toggle-label { font-size: 12px; color: var(--text2); }
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0;
+    background: var(--border2);
+    border-radius: 20px;
+    transition: .2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: var(--text3);
+    border-radius: 50%;
+    transition: .2s;
+  }
+  input:checked + .slider { background: var(--green); }
+  input:checked + .slider::before { transform: translateX(16px); background: #fff; }
+
+  /* ── Headers table ── */
+  .headers-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .header-row { display: grid; grid-template-columns: 1fr 1fr 28px; gap: 6px; align-items: center; }
+  .header-row input { margin: 0; }
+  .del-btn {
+    background: none;
+    border: 0.5px solid var(--border2);
+    border-radius: 6px;
+    color: var(--red-light);
+    width: 28px; height: 28px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: background .15s;
+  }
+  .del-btn:hover { background: var(--red-bg); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid;
+    transition: all .15s;
+    font-family: var(--font-sans);
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  .btn-get  { background: var(--green-bg); border-color: var(--green); color: var(--green-light); width: 100%; }
+  .btn-get:hover:not(:disabled)  { background: #174d36; }
+  .btn-post { background: var(--blue-bg);  border-color: var(--blue);  color: var(--blue-light);  width: 100%; }
+  .btn-post:hover:not(:disabled) { background: #102a4a; }
+  .btn-sm {
+    background: var(--bg4); border-color: var(--border2); color: var(--text2);
+    padding: 5px 11px; font-size: 12px;
+  }
+  .btn-sm:hover { background: var(--bg3); color: var(--text); }
+
+  /* ── Panels grid ── */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 640px) { .panels { grid-template-columns: 1fr; } .row2 { grid-template-columns: 1fr; } }
+
+  /* ── Terminal ── */
+  .terminal {
+    background: #060a0f;
+    border: 0.5px solid #1a2540;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    margin-bottom: 1rem;
+  }
+  .term-bar {
+    background: #0d1220;
+    border-bottom: 0.5px solid #1a2540;
+    padding: .55rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .term-dots { display: flex; gap: 5px; }
+  .td { width: 11px; height: 11px; border-radius: 50%; }
+  .td1 { background: #E24B4A; } .td2 { background: #FAC775; } .td3 { background: #1D9E75; }
+  .term-bar-label { font-size: 10px; color: #2d3f5e; letter-spacing: .1em; text-transform: uppercase; margin-left: 4px; }
+  .term-clear { margin-left: auto; font-size: 11px; color: #2d3f5e; cursor: pointer; background: none; border: none;
+    font-family: var(--font-mono); transition: color .15s; padding: 0; }
+  .term-clear:hover { color: var(--text2); }
+
+  .term-body { padding: 1rem 1.1rem; min-height: 130px; max-height: 320px; overflow-y: auto; }
+  .term-body::-webkit-scrollbar { width: 4px; }
+  .term-body::-webkit-scrollbar-track { background: transparent; }
+  .term-body::-webkit-scrollbar-thumb { background: #1a2540; border-radius: 4px; }
+
+  .tl { font-size: 12px; line-height: 1.75; word-break: break-all; }
+  .c-prompt { color: #2d4a6e; }
+  .c-method { color: var(--amber); font-weight: 700; }
+  .c-url { color: var(--blue-light); }
+  .c-ok { color: var(--green-light); font-weight: 600; }
+  .c-warn { color: var(--amber); font-weight: 600; }
+  .c-err { color: var(--red-light); font-weight: 600; }
+  .c-key { color: var(--purple); }
+  .c-str { color: var(--green-light); }
+  .c-num { color: var(--amber); }
+  .c-null { color: var(--red-light); }
+  .c-dim { color: #2d4a6e; }
+  .c-muted { color: #3a4f72; font-style: italic; }
+  .c-sep { color: #1a2a45; display: block; margin: 6px 0; border: none; border-top: 0.5px solid #1a2540; }
+
+  .spinner-wrap { display: inline-flex; align-items: center; gap: 8px; }
+  .spin {
+    display: inline-block; width: 11px; height: 11px;
+    border: 1.5px solid #2d4a6e; border-top-color: var(--blue-light);
+    border-radius: 50%; animation: spin .55s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Collapsible ── */
+  .collapsible-body { display: none; }
+  .collapsible-body.open { display: block; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex; gap: 8px; align-items: center;
+    padding: .5rem .9rem;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .status-dot.ok { background: var(--green); }
+  .status-dot.err { background: var(--red); }
+  #statusText { color: var(--text2); }
+
+  hr.sep { border: none; border-top: 0.5px solid var(--border); margin: 1rem 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="wl"><span class="w1"></span><span class="w2"></span><span class="w3"></span></div>
+    <h1><span>Node.js</span> API Tester</h1>
+    <span class="version">v1.0.0</span>
+  </div>
+
+  <!-- ── Config: endpoint + auth ── -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard('cfg')">
+      <span class="badge badge-cfg">CFG</span>
+      <span class="card-header-title">Endpoint &amp; Auth</span>
+      <span class="chevron open" id="chev-cfg">▾</span>
+    </div>
+    <div class="card-body collapsible-body open" id="cfg-body">
+      <div class="field">
+        <label>Base URL</label>
+        <input type="text" id="baseUrl" value="http://localhost:3000/api" spellcheck="false" placeholder="http://localhost:3000/api" />
+      </div>
+      <hr class="sep" />
+
+      <!-- Bearer token -->
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="useBearer" onchange="toggleBearer()" />
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Bearer Token</span>
+      </div>
+      <div class="field" id="bearerField" style="display:none">
+        <label>Token</label>
+        <input type="password" id="bearerToken" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." spellcheck="false" />
+      </div>
+
+      <hr class="sep" />
+
+      <!-- Custom headers -->
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="useCustomHeaders" onchange="toggleCustomHeaders()" />
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Custom Headers</span>
+      </div>
+      <div id="customHeadersSection" style="display:none">
+        <div class="headers-list" id="headersList"></div>
+        <button class="btn btn-sm" onclick="addHeaderRow()">+ Aggiungi header</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GET + POST ── -->
+  <div class="panels">
+
+    <!-- GET -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header" style="cursor:default">
+        <span class="badge badge-get">GET</span>
+        <span class="card-header-title">Request</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Path</label>
+          <input type="text" id="getPath" placeholder="/users" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label>Query params <span style="color:var(--text3);font-weight:400;text-transform:none">(key=value per riga)</span></label>
+          <textarea id="getParams" placeholder="id=1&#10;active=true&#10;page=0"></textarea>
+        </div>
+        <button class="btn btn-get" id="getBtn" onclick="doGet()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Invia GET
+        </button>
+      </div>
+    </div>
+
+    <!-- POST -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header" style="cursor:default">
+        <span class="badge badge-post">POST</span>
+        <span class="card-header-title">Request</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Path</label>
+          <input type="text" id="postPath" placeholder="/users" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label>Body JSON</label>
+          <textarea id="postBody" placeholder='{"name": "Mario Rossi", "email": "mario@example.com"}'></textarea>
+        </div>
+        <button class="btn btn-post" id="postBtn" onclick="doPost()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Invia POST
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Status bar ── -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">In attesa...</span>
+  </div>
+
+  <!-- ── Terminal ── -->
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="term-dots"><div class="td td1"></div><div class="td td2"></div><div class="td td3"></div></div>
+      <span class="term-bar-label">Output Terminal</span>
+      <button class="term-clear" onclick="clearTerm()">clear</button>
+    </div>
+    <div class="term-body" id="termBody">
+      <div class="tl c-muted">// Pronto. Configura l'endpoint e invia una richiesta.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──
+let headerCount = 0;
+
+// ── Toggle card ──
+function toggleCard(id) {
+  const body = document.getElementById(id + '-body');
+  const chev = document.getElementById('chev-' + id);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// ── Toggle bearer ──
+function toggleBearer() {
+  const on = document.getElementById('useBearer').checked;
+  document.getElementById('bearerField').style.display = on ? 'block' : 'none';
+}
+
+// ── Toggle custom headers ──
+function toggleCustomHeaders() {
+  const on = document.getElementById('useCustomHeaders').checked;
+  document.getElementById('customHeadersSection').style.display = on ? 'block' : 'none';
+}
+
+// ── Add header row ──
+function addHeaderRow() {
+  const list = document.getElementById('headersList');
+  const id = ++headerCount;
+  const row = document.createElement('div');
+  row.className = 'header-row';
+  row.id = 'hrow-' + id;
+  row.innerHTML = `
+    <input type="text" placeholder="X-Header-Name" spellcheck="false" id="hkey-${id}" />
+    <input type="text" placeholder="value" spellcheck="false" id="hval-${id}" />
+    <button class="del-btn" onclick="removeHeader(${id})" title="Rimuovi">×</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeHeader(id) {
+  const row = document.getElementById('hrow-' + id);
+  if (row) row.remove();
+}
+
+// ── Build headers object ──
+function buildHeaders() {
+  const headers = { 'Accept': 'application/json' };
+
+  // Bearer
+  if (document.getElementById('useBearer').checked) {
+    const token = document.getElementById('bearerToken').value.trim();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+  }
+
+  // Custom headers
+  if (document.getElementById('useCustomHeaders').checked) {
+    const rows = document.querySelectorAll('#headersList .header-row');
+    rows.forEach(row => {
+      const keyEl = row.querySelector('input:nth-child(1)');
+      const valEl = row.querySelector('input:nth-child(2)');
+      if (keyEl && valEl) {
+        const k = keyEl.value.trim();
+        const v = valEl.value.trim();
+        if (k) headers[k] = v;
+      }
+    });
+  }
+
+  return headers;
+}
+
+// ── Build URL ──
+function buildUrl(path, queryRaw) {
+  let base = document.getElementById('baseUrl').value.trim().replace(/\/$/, '');
+  let p = (path || '').trim();
+  if (p && !p.startsWith('/')) p = '/' + p;
+  let url = base + p;
+  if (queryRaw) {
+    const params = queryRaw.trim().split('\n')
+      .map(l => l.trim()).filter(l => l.includes('='))
+      .join('&');
+    if (params) url += '?' + params;
+  }
+  return url;
+}
+
+// ── Syntax colorize ──
+function colorize(val, depth) {
+  if (depth > 5) return '<span class="c-dim">…</span>';
+  if (val === null) return '<span class="c-null">null</span>';
+  if (typeof val === 'boolean') return '<span class="c-null">' + val + '</span>';
+  if (typeof val === 'number') return '<span class="c-num">' + val + '</span>';
+  if (typeof val === 'string') {
+    const safe = val.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<span class="c-str">"' + (safe.length > 140 ? safe.substring(0,140) + '…' : safe) + '"</span>';
+  }
+  if (Array.isArray(val)) {
+    if (!val.length) return '<span class="c-dim">[]</span>';
+    const items = val.slice(0, 6).map(v => '  ' + colorize(v, depth + 1));
+    const more = val.length > 6 ? '<br>  <span class="c-null">… +' + (val.length - 6) + ' more</span>' : '';
+    return '[<br>' + items.join(',<br>') + more + '<br>]';
+  }
+  if (typeof val === 'object') {
+    const keys = Object.keys(val);
+    if (!keys.length) return '<span class="c-dim">{}</span>';
+    const lines = keys.slice(0, 10).map(k =>
+      '  <span class="c-key">"' + k + '"</span><span class="c-dim">:</span> ' + colorize(val[k], depth + 1)
+    );
+    const more = keys.length > 10 ? '<br>  <span class="c-null">… +' + (keys.length - 10) + ' more</span>' : '';
+    return '{<br>' + lines.join(',<br>') + more + '<br>}';
+  }
+  return String(val);
+}
+
+// ── Status helpers ──
+function setStatus(code, label, isErr) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (isErr) { dot.className = 'status-dot err'; txt.textContent = label; return; }
+  if (code >= 200 && code < 300) { dot.className = 'status-dot ok'; }
+  else if (code >= 400) { dot.className = 'status-dot err'; }
+  else { dot.className = 'status-dot'; }
+  txt.textContent = 'HTTP ' + code + ' — ' + label;
+}
+
+// ── Log to terminal ──
+function logTerm(method, url, code, data, ms, isErr, reqHeaders) {
+  const tb = document.getElementById('termBody');
+  const now = new Date().toLocaleTimeString('it-IT');
+
+  let sc = isErr ? 'c-err' : (code >= 200 && code < 300 ? 'c-ok' : code >= 400 && code < 500 ? 'c-warn' : 'c-err');
+  let statusLine = '';
+  if (code) {
+    statusLine = `<div class="tl"><span class="c-dim">  status  </span><span class="${sc}">${code}</span>`
+      + (ms ? `<span class="c-dim">  ·  ${ms}ms</span>` : '') + '</div>';
+  }
+
+  // Headers summary
+  const hKeys = Object.keys(reqHeaders).filter(k => k !== 'Accept');
+  let headersLine = '';
+  if (hKeys.length) {
+    headersLine = '<div class="tl"><span class="c-dim">  headers </span>'
+      + hKeys.map(k => `<span class="c-key">${k}</span><span class="c-dim">:</span> `
+        + (k === 'Authorization' ? '<span class="c-str">Bearer ••••••</span>' : `<span class="c-str">${reqHeaders[k]}</span>`))
+        .join('  ') + '</div>';
+  }
+
+  let bodyLine = '';
+  if (isErr) {
+    bodyLine = `<div class="tl"><span class="c-dim">  error    </span><span class="c-err">${String(data).replace(/</g,'&lt;')}</span></div>`;
+  } else if (data !== undefined && data !== null) {
+    bodyLine = `<div class="tl"><span class="c-dim">  body     </span>${colorize(data, 0)}</div>`;
+  }
+
+  const html = `
+    <hr class="sep" />
+    <div class="tl"><span class="c-prompt">[${now}] $ </span><span class="c-method">${method}</span> <span class="c-url">${url}</span></div>
+    ${headersLine}
+    ${statusLine}
+    ${bodyLine}
+  `;
+
+  tb.innerHTML += html;
+  tb.scrollTop = tb.scrollHeight;
+}
+
+// ── Clear terminal ──
+function clearTerm() {
+  document.getElementById('termBody').innerHTML = '<div class="tl c-muted">// Terminal cleared.</div>';
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('statusText').textContent = 'In attesa...';
+}
+
+// ── Spinner ──
+function spinBtn(id, method) {
+  const b = document.getElementById(id);
+  b._orig = b.innerHTML;
+  b.innerHTML = `<span class="spinner-wrap"><span class="spin"></span> Invio ${method}…</span>`;
+  b.disabled = true;
+}
+function unspinBtn(id) {
+  const b = document.getElementById(id);
+  b.innerHTML = b._orig;
+  b.disabled = false;
+}
+
+// ── GET ──
+async function doGet() {
+  const url = buildUrl(document.getElementById('getPath').value, document.getElementById('getParams').value);
+  const headers = buildHeaders();
+  spinBtn('getBtn', 'GET');
+  const t0 = Date.now();
+  try {
+    const r = await fetch(url, { method: 'GET', headers });
+    const ms = Date.now() - t0;
+    let data;
+    const ct = r.headers.get('content-type') || '';
+    try { data = ct.includes('json') ? await r.json() : await r.text(); } catch { data = null; }
+    logTerm('GET', url, r.status, data, ms, false, headers);
+    setStatus(r.status, r.statusText, false);
+  } catch (e) {
+    logTerm('GET', url, null, e.message, null, true, headers);
+    setStatus(null, e.message, true);
+  }
+  unspinBtn('getBtn');
+}
+
+// ── POST ──
+async function doPost() {
+  const url = buildUrl(document.getElementById('postPath').value, null);
+  const rawBody = document.getElementById('postBody').value.trim();
+  let body, parseErr = false;
+  if (rawBody) {
+    try { body = JSON.parse(rawBody); }
+    catch { parseErr = true; }
+  }
+  if (parseErr) {
+    const tb = document.getElementById('termBody');
+    tb.innerHTML += `<hr class="sep" /><div class="tl c-err">✗ JSON non valido nel body — controlla la sintassi.</div>`;
+    tb.scrollTop = tb.scrollHeight;
+    setStatus(null, 'JSON body non valido', true);
+    return;
+  }
+  const headers = { ...buildHeaders(), 'Content-Type': 'application/json' };
+  spinBtn('postBtn', 'POST');
+  const t0 = Date.now();
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+    const ms = Date.now() - t0;
+    let data;
+    const ct = r.headers.get('content-type') || '';
+    try { data = ct.includes('json') ? await r.json() : await r.text(); } catch { data = null; }
+    logTerm('POST', url, r.status, data, ms, false, headers);
+    setStatus(r.status, r.statusText, false);
+  } catch (e) {
+    logTerm('POST', url, null, e.message, null, true, headers);
+    setStatus(null, e.message, true);
+  }
+  unspinBtn('postBtn');
+}
+</script>
+</body>
+</html>

@@ -7,7 +7,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core/constants';
 
-
 @Module({
   imports: [PostsModule,
     ThrottlerModule.forRoot({
@@ -17,7 +16,8 @@ import { APP_GUARD } from '@nestjs/core/constants';
           limit: 10,
         },
       ],
-    })
+    }),
+
   ],
   controllers: [AppController],
   providers: [AppService,

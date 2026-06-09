@@ -4,12 +4,18 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { Post as PostEntity } from './posts.service';
 import { Throttle } from '@nestjs/throttler';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { ApiSecurity } from '@nestjs/swagger';
+
+@ApiSecurity('custom-auth')
 @Controller('posts')
 @Throttle({ default: { limit: 3, ttl: 60000 } })
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @ApiOperation({ summary: 'Create a new post' })
+  @ApiBody({ type: CreatePostDto })
   @Post()
   create(@Body() createPostDto: CreatePostDto): PostEntity {
     return this.postsService.create(createPostDto);
