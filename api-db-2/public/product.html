@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Scheda prodotto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Burger Menu</a>
+            <a class="btn btn-outline-secondary" href="/">Torna alla lista</a>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div id="productView"></div>
+
+            <template id="productViewTemplate">
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-lg-6">
+                <img class="img-fluid rounded shadow-sm product-image" src="" alt="">
+                </div>
+
+                <div class="col-12 col-lg-6">
+                <span class="badge text-bg-warning mb-3">Burger</span>
+                <h1 class="fw-bold display-5 product-name"></h1>
+                <p class="lead text-muted product-description"></p>
+
+                <div class="my-4">
+                    <span class="fs-2 fw-bold">€ <span class="product-price"></span></span>
+                </div>
+
+                <p class="text-muted mb-1">Slug: <code class="product-slug"></code></p>
+                <p class="text-muted">SKU: <code class="product-sku"></code></p>
+
+                <div class="admin-buttons mt-4 d-flex gap-2 d-none">
+                    <a class="btn btn-primary edit-link" href="#">Modifica</a>
+                    <button class="btn btn-outline-danger delete-button">Elimina</button>
+                </div>
+                </div>
+            </div>
+            </template>
+    </main>
+
+    <script type="module" src="/index.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const id = new URLSearchParams(location.search).get('id');
+            loadProductView(id);
+        });
+    </script>
+
+</body>
+
+</html>

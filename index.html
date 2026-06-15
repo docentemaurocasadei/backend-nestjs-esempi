@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+
+<body>
+    <h1>Promise Fetch</h1>
+    <div class="container">
+        <div class="row card-list-fetch gap-3"></div>
+    </div>
+
+    <h1>Promise Async/Await</h1>
+    <div class="container">
+        <div class="row card-list-promise gap-3"></div>
+    </div>
+
+    <template id="product-card-template">
+        <div class="col-md-4">
+            <div class="card" style="width: 18rem;">
+                <img src="..." class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title"></h5>
+                    <p class="card-text"></p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        fetch('http://localhost:3000/products')
+            .then(response => response.json())
+            .then(data => {
+                const cardList = document.querySelector('.card-list-fetch');
+                const template = document.querySelector('#product-card-template');
+                console.log(data);
+                data.forEach(product => {
+                    const clone = template.content.cloneNode(true);
+
+                    clone.querySelector('.card-title').textContent = product.name;
+                    clone.querySelector('.card-text').textContent = `Price: $${product.price}`;
+
+                    cardList.appendChild(clone);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+    <script>
+    async function getProducts() {
+        const response = await fetch('http://localhost:3000/products');
+        const data = await response.json();
+        return data;
+    }
+
+    async function renderProductsWithAsyncAwait() {
+        try {
+            const data = await getProducts();
+
+            const cardList = document.querySelector('.card-list-promise');
+            const template = document.querySelector('#product-card-template');
+
+            data.forEach(product => {
+                const clone = template.content.cloneNode(true);
+
+                clone.querySelector('.card-title').textContent = product.name;
+                clone.querySelector('.card-text').textContent = `Price: $${product.price}`;
+
+                cardList.appendChild(clone);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    renderProductsWithAsyncAwait();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

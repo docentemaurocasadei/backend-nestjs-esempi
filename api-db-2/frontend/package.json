@@ -1,0 +1,12 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:frontend": "tsc -p tsconfig.json",
+    "watch:frontend": "tsc -p tsconfig.json --watch"
+  },
+  "author": "Mauro Casadei",
+  "license": "ISC",
+  "description": "Sviluppo Frontend per Apllicazione didattica"
+}
