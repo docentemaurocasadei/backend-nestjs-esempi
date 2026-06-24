@@ -8,5 +8,8 @@
   },
   "author": "Mauro Casadei",
   "license": "ISC",
-  "description": "Sviluppo Frontend per Apllicazione didattica"
+  "description": "Sviluppo Frontend per Apllicazione didattica",
+  "dependencies": {
+    "typescript": "^6.0.3"
+  }
 }
